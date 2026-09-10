@@ -10,7 +10,7 @@
     {
       "binding": "DB",
       "database_name": "astro-resume-foundry",
-      "database_id": "REPLACE_WITH_CLOUDFLARE_D1_DATABASE_ID",
+      "database_id": "fdf8890f-f3ea-457b-9b1d-3822813e5581",
       "migrations_dir": "db/migrations"
     }
   ],
@@ -25,6 +25,7 @@
   },
   "vars": {
     "APP_ENV": "production",
-    "AUTH_STRATEGY": "clerk"
+    "AUTH_STRATEGY": "clerk",
+    "GEMINI_MODEL": "gemini-3.5-flash-lite"
   }
 }
