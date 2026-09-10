@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>職務経歴書プレビュー</title>
     @include('partials.gtm-head')
-    @include('partials.adsense')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 

@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>プライバシーポリシー | 職務経歴書ジェネレーター</title>
     @include('partials.gtm-head')
-    @include('partials.adsense')
     @vite(['resources/css/app.css'])
 </head>
 
@@ -18,7 +17,6 @@
                     Foundry</span></a>
             <nav class="site-nav" aria-label="サイトメニュー">
                 <a href="{{ route('resume.create') }}">作成画面</a>
-                <a href="{{ route('guides.index') }}">書き方ガイド</a>
                 <a href="{{ route('contact') }}">お問い合わせ</a>
             </nav>
         </header>
@@ -54,15 +52,8 @@
             </section>
 
             <section class="info-section">
-                <h2>4. アクセス解析・広告</h2>
-                <p>本サービスでは、Google AdSenseを利用して広告を配信しています。Google
-                    AdSenseでは、広告の配信、表示の最適化、広告の効果測定のために、Cookie、広告識別子、アクセス情報などが利用される場合があります。</p>
-                <p>GoogleおよびGoogleのパートナーは、利用者の本サービスや他のウェブサイトへのアクセス情報をもとに、利用者の興味や関心に応じた広告を表示する場合があります。広告配信におけるCookieの利用やパーソナライズ広告の設定については、Googleの<a
-                        href="https://policies.google.com/technologies/ads" target="_blank"
-                        rel="noopener noreferrer">広告に関するポリシー</a>をご確認ください。</p>
-                <p>利用者は、ブラウザの設定でCookieを無効にしたり、Googleの<a href="https://adssettings.google.com/" target="_blank"
-                        rel="noopener noreferrer">広告設定</a>でパーソナライズ広告を無効にしたりできます。Cookieを無効にした場合、本サービスの一部機能や広告表示に影響することがあります。
-                </p>
+                <h2>4. アクセス解析</h2>
+                <p>本サービスでは、利用状況の把握と改善のためにGoogle Tag Managerを利用しています。設定されたアクセス解析サービスにより、Cookie、閲覧したページ、利用環境などの情報が収集される場合があります。</p>
             </section>
 
             <section class="info-section">
@@ -88,7 +79,7 @@
                         rel="noopener noreferrer">ギムレットのプロフィールページ</a>をご確認ください。</p>
             </section>
 
-            <p class="info-updated">制定日：2026年8月22日　最終改定日：2026年8月23日</p>
+            <p class="info-updated">制定日：2026年8月22日　最終改定日：2026年9月10日</p>
         </main>
     </div>
 </body>

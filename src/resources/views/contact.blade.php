@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>お問い合わせ | 職務経歴書ジェネレーター</title>
     @include('partials.gtm-head')
-    @include('partials.adsense')
     @vite(['resources/css/app.css'])
 </head>
 
@@ -18,7 +17,6 @@
                     Foundry</span></a>
             <nav class="site-nav" aria-label="サイトメニュー">
                 <a href="{{ route('resume.create') }}">作成画面</a>
-                <a href="{{ route('guides.index') }}">書き方ガイド</a>
                 <a href="{{ route('privacy') }}">プライバシーポリシー</a>
             </nav>
         </header>

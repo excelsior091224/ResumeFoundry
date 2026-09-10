@@ -7,7 +7,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>職務経歴書ジェネレーター</title>
     @include('partials.gtm-head')
-    @include('partials.adsense')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -17,11 +16,6 @@
         {{-- 画面のヘッダー。入力内容を保存しない方針も明示する。 --}}
         <header class="topbar">
             <div class="brand"><span class="brand-mark">R</span><span>Resume Foundry</span></div>
-            <nav class="topbar-nav">
-                <a href="{{ route('guides.index') }}">書き方ガイド</a>
-                <a href="{{ route('guides.how-to-write-resume') }}">作成コツ</a>
-                <a href="{{ route('guides.self-pr-examples') }}">自己PR例文</a>
-            </nav>
             <small>入力内容は保存されません</small>
         </header>
 
@@ -395,105 +389,9 @@
             </section>
         </main>
 
-        {{-- クローラ対策およびユーザー支援のためのリッチテキストコンテンツ領域 --}}
-        <section class="landing-info-section">
-            <div class="landing-info-container">
-                <div class="info-block">
-                    <h2>Resume Foundry 職務経歴書ジェネレーターの特徴</h2>
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h3>1. 会員登録不要・完全無料</h3>
-                            <p>アカウント作成やログインは一切不要です。ブラウザを開いてすぐに職務経歴書の作成を始めることができます。</p>
-                        </div>
-                        <div class="feature-card">
-                            <h3>2. サーバーに個人情報を保存しない安心設計</h3>
-                            <p>入力した氏名や職歴データはサーバー側のデータベースへ保存されません。ブラウザのローカル保存（下書き機能）のみで完結する安全な仕組みです。</p>
-                        </div>
-                        <div class="feature-card">
-                            <h3>3. 高精度なPDF・Word (DOCX) 即時出力</h3>
-                            <p>日本語フォント（IPAexゴシック）が埋め込まれたレイアウト崩れのないきれいなPDFファイル、および編集可能なWordファイルをワンクリックでダウンロードできます。</p>
-                        </div>
-                        <div class="feature-card">
-                            <h3>4. AI職務要約生成アシスト</h3>
-                            <p>入力した職歴やスキル情報をもとに、要約文を自動生成するアシスト機能を搭載しています（同意いただいた場合のみ通信します）。</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-block">
-                    <h2>かんたん3ステップの使い方</h2>
-                    <div class="steps-grid">
-                        <div class="step-card">
-                            <span class="step-num">STEP 1</span>
-                            <h3>フォームに必要事項を入力</h3>
-                            <p>氏名や基準日、スキル、企業ごとの職歴やプロジェクト履歴、自己PRを入力します。項目は必要に応じて自由に追加・削除できます。</p>
-                        </div>
-                        <div class="step-card">
-                            <span class="step-num">STEP 2</span>
-                            <h3>プレビュー画面で仕上がりを確認</h3>
-                            <p>画面右側のライブプレビュー（または印刷プレビュー）で、実際の帳票形式に配置された状態をリアルタイムで確認・微調整します。</p>
-                        </div>
-                        <div class="step-card">
-                            <span class="step-num">STEP 3</span>
-                            <h3>PDF / Word形式でダウンロード</h3>
-                            <p>「PDFをダウンロード」または「DOCXをダウンロード」ボタンを押すと、即座にファイルが生成されて保存されます。</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-block">
-                    <h2>よくある質問（FAQ）</h2>
-                    <div class="faq-list">
-                        <div class="faq-item">
-                            <h3>Q. 入力した職歴や個人情報が他人に閲覧されるリスクはありますか？</h3>
-                            <p>いいえ、ありません。当サービスでは入力データをお客様のブラウザ内（ローカルストレージ）のみに保持し、サーバーのデータベースへの蓄積・保持は一切行っていません。</p>
-                        </div>
-                        <div class="faq-item">
-                            <h3>Q. 生成されたPDFやWordファイルはそのまま応募企業に提出できますか？</h3>
-                            <p>はい、そのまま提出可能です。一般企業や転職エージェントの標準的な様式に準拠したレイアウトで出力されます。</p>
-                        </div>
-                        <div class="faq-item">
-                            <h3>Q. PDFとWord(DOCX)のどちら形式で提出すべきですか？</h3>
-                            <p>企業への直接応募や指定がない場合は、レイアウト崩れが起きない「PDF形式」をおすすめします。転職エージェント経由で提出する場合は編集可能な「Word形式」を指定されることがあります。
-                            </p>
-                        </div>
-                        <div class="faq-item">
-                            <h3>Q. スマホやタブレットでも作成できますか？</h3>
-                            <p>はい、各種スマートフォンやタブレットのブラウザからもご利用いただけます。PC環境でご利用いただくとプレビューの確認がよりスムーズに行えます。</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-block">
-                    <h2>職務経歴書作成に役立つノウハウガイド</h2>
-                    <div class="guide-link-grid">
-                        <a href="{{ route('guides.how-to-write-resume') }}" class="guide-link-card">
-                            <span class="tag">解説</span>
-                            <h3>職務経歴書の書き方完全ガイド &rarr;</h3>
-                            <p>採用担当者の目を引く構成とポイントを徹底解説します。</p>
-                        </a>
-                        <a href="{{ route('guides.self-pr-examples') }}" class="guide-link-card">
-                            <span class="tag">例文</span>
-                            <h3>職種別・自己PRと職務要約の例文集 &rarr;</h3>
-                            <p>エンジニア、Web系、営業、事務などの実践的な例文を網羅。</p>
-                        </a>
-                        <a href="{{ route('guides.pdf-word-submission-rules') }}" class="guide-link-card">
-                            <span class="tag">マナー</span>
-                            <h3>PDFとWordどちらが正解？提出時のマナー &rarr;</h3>
-                            <p>ファイル名の付け方、メール添付時の注意点について解説。</p>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <footer class="site-footer">
             <div class="footer-nav">
                 <a href="{{ route('resume.create') }}">ホーム (作成)</a>
-                <a href="{{ route('guides.index') }}">書き方ガイド一覧</a>
-                <a href="{{ route('guides.how-to-write-resume') }}">書き方完全ガイド</a>
-                <a href="{{ route('guides.self-pr-examples') }}">自己PR例文集</a>
-                <a href="{{ route('guides.pdf-word-submission-rules') }}">提出マナー</a>
                 <a href="{{ route('privacy') }}">プライバシーポリシー</a>
                 <a href="{{ route('contact') }}">お問い合わせ</a>
             </div>

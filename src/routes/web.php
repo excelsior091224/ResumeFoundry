@@ -14,12 +14,6 @@ Route::get('/contact', function () {
     ]);
 })->name('contact');
 
-// 職務経歴書の書き方・コラム・提出マナーガイド
-Route::view('/guides', 'guides.index')->name('guides.index');
-Route::view('/guides/how-to-write-resume', 'guides.how-to-write-resume')->name('guides.how-to-write-resume');
-Route::view('/guides/self-pr-examples', 'guides.self-pr-examples')->name('guides.self-pr-examples');
-Route::view('/guides/pdf-word-submission-rules', 'guides.pdf-word-submission-rules')->name('guides.pdf-word-submission-rules');
-
 // フォーム内容をバリデーションし、サーバー側のプレビューを表示する。
 Route::post('/resume/preview', [ResumeController::class, 'preview'])->name('resume.preview');
 

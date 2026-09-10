@@ -174,7 +174,6 @@ curl: (7) Failed to connect to 127.0.0.1 port 80
 7. HTTPSを設定
 8. 本番のプライバシーポリシーと問い合わせページを確認
 9. Googleフォーム内の本番ポリシーURLとリンク遷移を最終確認
-10. Google AdSenseの申請準備
 
 ## 7. 注意事項
 

@@ -57,22 +57,12 @@
 
 ## 5. 明日朝の再開手順（短縮版）
 
-1. リダイレクト最終確認
-   - `https://www.resumefoundries.com/privacy?x=1` が `https://resumefoundries.com/privacy?x=1` へ301で遷移するか確認。
-2. 主要ページ疎通確認
-   - `/`, `/privacy`, `/contact` の表示確認。
-3. フォーム外部リンク確認
-   - `GOOGLE_FORM_URL`リンク遷移確認。
-
-- Googleフォーム内のプライバシーポリシーリンク確認。
-
-4. 軽い運用確認
-   - `docker compose -f docker-compose.prod.yml ps`
-   - `docker compose -f docker-compose.prod.yml logs --tail=100 app`
-5. ドキュメント反映
-   - 今日の確定事項を `docs/design/2026-08-22-deployment-progress.md` に最終追記。
+1. リダイレクト最終確認: `https://www.resumefoundries.com/privacy?x=1` が `https://resumefoundries.com/privacy?x=1` へ301で遷移するか確認。
+1. 主要ページ疎通確認: `/`, `/privacy`, `/contact` の表示確認。
+1. フォーム外部リンク確認: `GOOGLE_FORM_URL`のリンク遷移と、Googleフォーム内のプライバシーポリシーリンクを確認。
+1. 軽い運用確認: `docker compose -f docker-compose.prod.yml ps`と`docker compose -f docker-compose.prod.yml logs --tail=100 app`を実行。
+1. ドキュメント反映: 今日の確定事項を `docs/design/2026-08-22-deployment-progress.md` に最終追記。
 
 ## 6. 残タスク
 
-- 広告申請前チェック（プライバシー/問い合わせ/利用導線の最終確認）。
 - 必要であれば監視・バックアップ運用メモの追加。
