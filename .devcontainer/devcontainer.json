@@ -21,7 +21,7 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "cd apps/resume-foundry && npm install",
+  "postCreateCommand": "sudo chown -R \"$(id -u):$(id -g)\" \"${containerWorkspaceFolder}\" && npm --prefix apps/resume-foundry install",
   "customizations": {
     "vscode": {
       "extensions": [
