@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro check && astro build",
-    "preview": "wrangler dev ./dist/_worker.js/index.js --assets ./dist",
-    "deploy": "astro build && wrangler deploy ./dist/_worker.js/index.js",
+    "preview": "wrangler dev dist/server/entry.mjs --assets dist/client --config dist/server/wrangler.json --local",
+    "deploy": "astro build && wrangler deploy --config dist/server/wrangler.json",
     "db:migrate:local": "wrangler d1 migrations apply astro-resume-foundry --local",
     "db:migrate:remote": "wrangler d1 migrations apply astro-resume-foundry --remote"
   },
@@ -20,7 +20,10 @@
   "license": "MIT",
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.0",
-    "astro": "^7.3.1"
+    "@pdf-lib/fontkit": "^1.1.1",
+    "astro": "^7.3.1",
+    "docx": "^9.5.1",
+    "pdf-lib": "^1.17.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

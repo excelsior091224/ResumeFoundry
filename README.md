@@ -1,142 +1,54 @@
-# Laravel Resume Generation System
+# ResumeFoundry
 
-職務経歴書を入力して、プレビューと出力までを一貫して扱える Laravel アプリです。
+職務経歴書を入力して、プレビューと出力までを一貫して扱えるアプリです。Cloudflare Workers上で動作し、VPSは不要です。
 
 ## 概要
 
-- 職務経歴書のフォーム入力
-- スキル・資格・自己PRなどの記入
-- 会社ごとの職歴とプロジェクト履歴の追加
-- ライブプレビュー
-- バリデーションによる入力値の整合性確認
-- Laravel + Blade + Alpine.js + Vite ベースの構成
+- 職務経歴書のフォーム入力(スキル・資格・自己PR・会社ごとの職歴とプロジェクト履歴など)
+- サーバーサイドでのライブプレビュー
+- PDF / DOCX ダウンロード
+- Gemini APIによる職務要約のAI生成
+- Astro + Cloudflare Workers(無料枠)構成。DBやログインは不要な一発生成型ツール
 
 ## 主要ディレクトリ
 
-- [src/app](src/app)
-- [src/resources](src/resources)
-- [src/routes](src/routes)
-- [src/tests](src/tests)
-- [apps/resume-foundry](apps/resume-foundry) - 新規リポジトリ `AstroResumeFoundry` へ切り出すためのAstro + Cloudflare Workersプロトタイプ
-- [docs/design](docs/design)
-
-## AstroResumeFoundry への切り出し方針
-
-保存型の職務経歴管理SaaSは、既存Laravelアプリとは別の新規リポジトリ `AstroResumeFoundry` として管理する方針。
-このリポジトリ内の `apps/resume-foundry` は、新規リポジトリへ移すための一時的なプロトタイプ配置である。
-
-```bash
-cd apps/resume-foundry
-npm run dev
-npm run build
-```
-
-新規リポジトリ作成後は、`apps/resume-foundry` の内容を `AstroResumeFoundry` のルートへ移し、保存型の職歴ログ、認証、D1保存、PDF/DOCX/AI課金の検証は新規リポジトリ側で進める。
-既存Laravelアプリは単発の職務経歴書生成ツールとして残す。
+- [apps/resume-foundry](apps/resume-foundry) - Astro + Cloudflare Workersアプリ本体(このリポジトリで唯一のアプリケーション)
+- [docs/design](docs/design) - 開発時の設計メモ・進捗記録(過去のLaravel版開発時のものを含む)
 
 ## 開発・確認コマンド
 
 ```bash
-cd /workspaces/LaravelResumeGenerationSystem/src
-php artisan serve --host 0.0.0.0 --port 8000
-npm run dev -- --host localhost
+cd apps/resume-foundry
+npm install
+npm run dev       # Astro dev server (http://localhost:4321)
+npm run build     # astro check && astro build
+npm run preview   # wrangler dev でCloudflare Workersランタイムを再現してローカル確認
+```
+
+## デプロイ
+
+```bash
+cd apps/resume-foundry
+wrangler login    # または CLOUDFLARE_API_TOKEN を設定
 npm run build
-php artisan test tests/Feature/ResumeValidationTest.php
+npm run deploy
 ```
 
-### Chromium方式のPDFテスト
-
-開発コンテナーをリビルドすると、本番と同じChromium方式でPDFを生成できます。
+Gemini APIキーはWorkersのシークレットとして設定する(リポジトリには含めない)。
 
 ```bash
-docker compose build --no-cache app
-docker compose up -d app
-docker exec laravel-app chromium --version
-docker exec laravel-app sh -lc 'cd /workspaces/LaravelResumeGenerationSystem/src && php artisan test --filter=DocumentGenerationTest --compact'
+wrangler secret put GEMINI_API_KEY
 ```
 
-`chromium --version`が成功すれば、PDF生成時にChromiumが自動選択されます。Chromiumが利用できない環境では、開発用のフォールバックとしてDompdfが使われます。
+詳細は [apps/resume-foundry/README.md](apps/resume-foundry/README.md) を参照。
 
-## 補足
+## 旧Laravel版について
 
-- 日々の進捗や開発メモは [docs/design](docs/design) に保存する。
-- 実装の詳細や技術メモは [src/README.md](src/README.md) にまとめる。
+以前はLaravel + VPS(Docker/Caddy)構成で運用していましたが、Cloudflare Workers版への移行に伴い、Laravelアプリ本体とVPS向けDocker/デプロイ設定はリポジトリから削除しました。
 
-## 本番マルチドメイン運用（Caddy）
-
-本番で複数ドメインを同一VPSに収容する場合は、Caddyをリバースプロキシとして利用する。アプリはホストの80/443を公開せず、Caddyから内部接続する。
+過去のコードは、削除前のスナップショットとして付けたgitタグ `legacy-laravel-vps` から参照できます。
 
 ```bash
-cd /workspaces/LaravelResumeGenerationSystem
-docker compose -f docker-compose.prod.yml -f docker-compose.proxy.yml up -d --build
+git show legacy-laravel-vps --stat   # 削除前の状態を確認
+git checkout legacy-laravel-vps -- src docker docker-compose.yml docker-compose.prod.yml docker-compose.proxy.yml  # 必要であれば復元
 ```
-
-### 同じComposeプロジェクトに追加する場合
-
-`docker-compose.prod.yml` に、ホストへポート公開しないサービスを追加する。
-
-```yaml
-	other-app:
-		build: /path/to/other-app
-		expose:
-			- "8080"
-```
-
-`docker/caddy/sites/other.example.com.caddy` を作成する。
-
-```caddyfile
-other.example.com {
-		reverse_proxy other-app:8080
-}
-```
-
-VPSで反映する。
-
-```bash
-cd ~/LaravelResumeGenerationSystem
-docker compose -f docker-compose.prod.yml -f docker-compose.proxy.yml up -d --build
-docker compose -f docker-compose.prod.yml -f docker-compose.proxy.yml exec -w /etc/caddy caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
-```
-
-### 別リポジトリのComposeとして追加する場合
-
-現在のCaddyネットワーク名を確認する。
-
-```bash
-docker network ls | grep laravelresumegenerationsystem
-```
-
-追加アプリ側のComposeで、表示されたネットワークを外部ネットワークとして指定する。
-
-```yaml
-services:
-	other-app:
-		image: example/other-app:latest
-		expose:
-			- "8080"
-		networks:
-			- edge
-
-networks:
-	edge:
-		external: true
-		name: laravelresumegenerationsystem_default
-```
-
-Caddy側の `docker/caddy/sites/other.example.com.caddy` に `reverse_proxy other-app:8080` を追加し、各Composeを反映する。
-
-```bash
-cd ~/other-app
-docker compose up -d
-
-cd ~/LaravelResumeGenerationSystem
-docker compose -f docker-compose.prod.yml -f docker-compose.proxy.yml exec -w /etc/caddy caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
-```
-
-追加アプリにも `80` や `443` の `ports` は設定しない。公開ポートはCaddyだけが使用する。
-
-- Caddy設定: [docker/caddy/Caddyfile](docker/caddy/Caddyfile)
-- 追加ドメイン用テンプレート: [docker/caddy/sites/example-other-app.caddy.example](docker/caddy/sites/example-other-app.caddy.example)
-- Compose上書き: [docker-compose.proxy.yml](docker-compose.proxy.yml)
-
-CloudflareのFull (strict)を使う場合、証明書を `private/certs` に配置してCaddyへマウントする。

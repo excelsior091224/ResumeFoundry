@@ -1,45 +1,39 @@
 {
-  "name": "LaravelResumeGenerationSystem",
-  "dockerComposeFile": "../docker-compose.yml",
-  "service": "app",
-  "workspaceFolder": "/workspaces/LaravelResumeGenerationSystem",
-  "shutdownAction": "stopCompose",
+  "name": "ResumeFoundry",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
   "mounts": [
-    "source=laravel-resume-vscode-server,target=/root/.vscode-server,type=volume"
+    "source=resume-foundry-vscode-server,target=/root/.vscode-server,type=volume"
   ],
   "forwardPorts": [
-    "app:80",
-    "phpmyadmin:80"
+    4321,
+    8787
   ],
-  "otherPortsAttributes": {
-    "onAutoForward": "silent"
+  "portsAttributes": {
+    "4321": {
+      "label": "Astro Dev Server",
+      "onAutoForward": "notify"
+    },
+    "8787": {
+      "label": "Wrangler Dev (Cloudflare Workers)",
+      "onAutoForward": "notify"
+    }
   },
-  "postCreateCommand": "/bin/sh -c \"/usr/local/bin/install-laravel.sh && cd /workspaces/LaravelResumeGenerationSystem/src && rm -f public/hot storage/framework/vite.hot && npm run build && php artisan migrate --force --no-interaction\"",
+  "postCreateCommand": "cd apps/resume-foundry && npm install",
   "customizations": {
     "vscode": {
       "extensions": [
-        "amiralizadeh9480.laravel-extra-intellisense",
-        "bmewburn.vscode-intelephense-client",
-        "bradlc.vscode-tailwindcss",
-        "codingyu.laravel-goto-view",
+        "astro-build.astro-vscode",
         "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
         "editorconfig.editorconfig",
         "eamodio.gitlens",
-        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
         "mikestead.dotenv",
         "ms-azuretools.vscode-docker",
-        "mtxr.sqltools",
-        "mtxr.sqltools-driver-mysql",
-        "onecentlin.laravel-blade",
-        "onecentlin.laravel5-snippets",
-        "open-southeners.laravel-pint",
-        "ryannaddy.laravel-artisan",
-        "shufo.vscode-blade-formatter",
-        "xdebug.php-debug",
-        "yzane.markdown-pdf",
-        "tomoki1207.pdf",
         "davidanson.vscode-markdownlint",
-        "cweijan.vscode-office",
         "yzhang.markdown-all-in-one",
         "saoudrizwan.claude-dev"
       ]

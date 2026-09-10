@@ -1,5 +1,0 @@
-# 追加ドメインの例
-# other-service.example.com {
-#     tls /etc/caddy/certs/other-service.crt /etc/caddy/certs/other-service.key
-#     reverse_proxy other-service:8080
-# }
