@@ -234,6 +234,18 @@
   opacity: 0.55;
 }
 
+.btn-primary {
+  background: var(--resume-teal);
+  color: #ffffff;
+}
+
+.success-summary {
+  border-color: #2e7d32 !important;
+  border-left-color: #2e7d32 !important;
+  background: #e8f5e9 !important;
+  color: #1b5e20 !important;
+}
+
 .btn-secondary {
   background: #e6f0ee;
   color: var(--resume-teal);

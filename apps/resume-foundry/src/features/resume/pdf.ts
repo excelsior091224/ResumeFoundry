@@ -245,33 +245,54 @@ function drawProjects(
   projects: ResumeProject[],
 ): void {
   for (const project of projects) {
-    state.ensureSpace(28);
-    state.page.drawText(`■ ${project.name}（${[project.period_from, project.period_to].filter(Boolean).join('〜')}）`, {
-      x: MARGIN_X + 6,
-      y: state.y - 10,
-      size: 9.5,
-      font,
-      color: BRAND,
-    });
-    state.y -= 16;
-    state.drawTextBlock(font, project.description, MARGIN_X + 6, PAGE_WIDTH - MARGIN_X * 2 - 6, 8, 11.6);
-    state.drawTextBlock(font, `【担当工程】\n${project.processes}`, MARGIN_X + 6, PAGE_WIDTH - MARGIN_X * 2 - 6, 8, 11.6);
-    state.drawTextBlock(
-      font,
-      `【使用技術・DB・OS】\n${project.technologies}`,
-      MARGIN_X + 6,
-      PAGE_WIDTH - MARGIN_X * 2 - 6,
-      8,
-      11.6,
-    );
-    state.drawTextBlock(
-      font,
-      `【組織・役割】\n${displayRole(project)} / ${project.team}`,
-      MARGIN_X + 6,
-      PAGE_WIDTH - MARGIN_X * 2 - 6,
-      8,
-      11.6,
-    );
+    if (
+      !project.name &&
+      !project.description &&
+      !project.processes &&
+      !project.technologies &&
+      !project.role &&
+      !project.team
+    ) {
+      continue;
+    }
+
+    const projectPeriod = [project.period_from, project.period_to].filter(Boolean).join('〜');
+    const periodText = projectPeriod ? `（${projectPeriod}）` : '';
+    const title = project.name ? `■ ${project.name}${periodText}` : periodText ? `■ ${periodText}` : '';
+
+    if (title) {
+      state.ensureSpace(28);
+      state.page.drawText(title, {
+        x: MARGIN_X + 6,
+        y: state.y - 10,
+        size: 9.5,
+        font,
+        color: BRAND,
+      });
+      state.y -= 16;
+    }
+
+    if (project.description) {
+      state.drawTextBlock(font, project.description, MARGIN_X + 6, PAGE_WIDTH - MARGIN_X * 2 - 6, 8, 11.6);
+    }
+    if (project.processes) {
+      state.drawTextBlock(font, `【担当工程】\n${project.processes}`, MARGIN_X + 6, PAGE_WIDTH - MARGIN_X * 2 - 6, 8, 11.6);
+    }
+    if (project.technologies) {
+      state.drawTextBlock(
+        font,
+        `【使用技術・DB・OS】\n${project.technologies}`,
+        MARGIN_X + 6,
+        PAGE_WIDTH - MARGIN_X * 2 - 6,
+        8,
+        11.6,
+      );
+    }
+    const roleTeam = [displayRole(project), project.team].filter(Boolean).join(' / ');
+    if (roleTeam) {
+      state.drawTextBlock(font, `【組織・役割】\n${roleTeam}`, MARGIN_X + 6, PAGE_WIDTH - MARGIN_X * 2 - 6, 8, 11.6);
+    }
+
     state.page.drawLine({
       start: { x: MARGIN_X + 6, y: state.y },
       end: { x: PAGE_WIDTH - MARGIN_X, y: state.y },

@@ -1,19 +1,26 @@
 /// <reference path="../.astro/types.d.ts" />
 /// <reference types="astro/client" />
-
-type Runtime = import('@astrojs/cloudflare').Runtime<Env>;
+/// <reference types="@cloudflare/workers-types" />
 
 interface Env {
   ASSETS: Fetcher;
   DB: D1Database;
   EXPORTS: R2Bucket;
   AI?: Ai;
-  CLERK_PUBLISHABLE_KEY?: string;
+  PUBLIC_CLERK_PUBLISHABLE_KEY?: string;
   CLERK_SECRET_KEY?: string;
   GEMINI_API_KEY?: string;
   GEMINI_MODEL?: string;
 }
 
+type Runtime = import('@astrojs/cloudflare').Runtime<Env>;
+
 declare namespace App {
-  interface Locals extends Runtime {}
+  interface Locals {
+    runtime?: {
+      env: Env;
+      cf?: Record<string, unknown>;
+      ctx?: ExecutionContext;
+    };
+  }
 }

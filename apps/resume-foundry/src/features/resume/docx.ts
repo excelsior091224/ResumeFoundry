@@ -66,32 +66,65 @@ function companyMeta(company: ResumeCompany): string {
 }
 
 function projectParagraphs(project: ResumeProject): Paragraph[] {
-  const role = displayRole(project);
+  if (
+    !project.name &&
+    !project.description &&
+    !project.processes &&
+    !project.technologies &&
+    !project.role &&
+    !project.team
+  ) {
+    return [];
+  }
 
-  return [
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: `■ ${project.name}（${[project.period_from, project.period_to].filter(Boolean).join('〜')}）`,
-          bold: true,
-          font: 'IPAexGothic',
-          color: '20252A',
-        }),
-      ],
-      spacing: { before: 70, after: 40 },
-      indent: { left: 180 },
-    }),
-    paragraph(project.description, { spacing: { after: 40 }, indent: { left: 180 } }),
-    paragraph(`【担当工程】\n${project.processes}`, { spacing: { after: 30 }, indent: { left: 180 } }),
-    paragraph(`【使用技術・DB・OS】\n${project.technologies}`, {
-      spacing: { after: 30 },
-      indent: { left: 180 },
-    }),
-    paragraph(`【組織・役割】\n${role} / ${project.team}`, {
-      spacing: { after: 70 },
-      indent: { left: 180 },
-    }),
-  ];
+  const role = displayRole(project);
+  const projectPeriod = [project.period_from, project.period_to].filter(Boolean).join('〜');
+  const periodText = projectPeriod ? `（${projectPeriod}）` : '';
+  const titleText = project.name ? `■ ${project.name}${periodText}` : periodText ? `■ ${periodText}` : '';
+
+  const paragraphs: Paragraph[] = [];
+  if (titleText) {
+    paragraphs.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: titleText,
+            bold: true,
+            font: 'IPAexGothic',
+            color: '20252A',
+          }),
+        ],
+        spacing: { before: 70, after: 40 },
+        indent: { left: 180 },
+      }),
+    );
+  }
+
+  if (project.description) {
+    paragraphs.push(paragraph(project.description, { spacing: { after: 40 }, indent: { left: 180 } }));
+  }
+  if (project.processes) {
+    paragraphs.push(paragraph(`【担当工程】\n${project.processes}`, { spacing: { after: 30 }, indent: { left: 180 } }));
+  }
+  if (project.technologies) {
+    paragraphs.push(
+      paragraph(`【使用技術・DB・OS】\n${project.technologies}`, {
+        spacing: { after: 30 },
+        indent: { left: 180 },
+      }),
+    );
+  }
+  const roleTeam = [role, project.team].filter(Boolean).join(' / ');
+  if (roleTeam) {
+    paragraphs.push(
+      paragraph(`【組織・役割】\n${roleTeam}`, {
+        spacing: { after: 70 },
+        indent: { left: 180 },
+      }),
+    );
+  }
+
+  return paragraphs;
 }
 
 export async function generateResumeDocx(resume: ResumePayload): Promise<ArrayBuffer> {

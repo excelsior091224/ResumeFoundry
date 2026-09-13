@@ -1,0 +1,19 @@
+---
+import { SignIn } from '@clerk/astro/components';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+const { isAuthenticated } = Astro.locals.auth();
+if (isAuthenticated) {
+  return Astro.redirect('/app', 303);
+}
+---
+<BaseLayout title="ログイン | Resume Foundry">
+  <section class="container auth-container">
+    <SignIn
+      path="/auth/login"
+      routing="path"
+      signUpUrl="/auth/register"
+      fallbackRedirectUrl="/app"
+    />
+  </section>
+</BaseLayout>

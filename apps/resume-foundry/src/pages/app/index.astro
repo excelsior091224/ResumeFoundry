@@ -1,20 +1,41 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { env } from 'cloudflare:workers';
+import { ensureClerkUserExists, getCareerStats } from '../../features/careers/db';
+
+const auth = Astro.locals.auth();
+if (!auth.isAuthenticated) {
+  return auth.redirectToSignIn({ returnBackUrl: Astro.url.href });
+}
+const { userId } = auth;
+
+const db = env.DB;
+const clerkUser = await Astro.locals.currentUser();
+const email = clerkUser?.primaryEmailAddress?.emailAddress;
+const displayName = clerkUser?.fullName || clerkUser?.firstName || '';
+if (db) {
+  await ensureClerkUserExists(db, userId, email, displayName);
+}
+const stats = db
+  ? await getCareerStats(db, userId)
+  : { companyCount: 0, projectCount: 0, skillCount: 0, certificationCount: 0, linkCount: 0 };
 ---
 <BaseLayout title="ダッシュボード | Resume Foundry">
   <section class="container stack">
     <div class="card">
-      <span class="eyebrow">Authenticated app placeholder</span>
-      <h1>ダッシュボード</h1>
-      <p>本番ではClerkなどでログイン済みユーザーを確認し、D1から職歴・案件・スキルを読み込みます。</p>
+      <span class="eyebrow">Career Dashboard (Cloudflare D1)</span>
+      <h1>キャリアダッシュボード</h1>
+      <p>{displayName || email || 'ユーザー'}さんの職歴・案件・スキル・資格の最新ステータスです。</p>
       <div class="kpis">
-        <div class="kpi"><strong>3</strong><span>登録案件</span></div>
-        <div class="kpi"><strong>12</strong><span>スキル</span></div>
-        <div class="kpi"><strong>1</strong><span>出力テンプレート</span></div>
+        <div class="kpi"><strong>{stats.companyCount}</strong><span>所属企業</span></div>
+        <div class="kpi"><strong>{stats.projectCount}</strong><span>登録案件</span></div>
+        <div class="kpi"><strong>{stats.skillCount}</strong><span>登録スキル</span></div>
+        <div class="kpi"><strong>{stats.certificationCount}</strong><span>保有資格</span></div>
+        <div class="kpi"><strong>{stats.linkCount}</strong><span>関連リンク</span></div>
       </div>
       <div class="actions">
-        <a class="button" href="/app/careers">職歴を記録する</a>
-        <a class="button secondary" href="/app/preview">職務経歴書を見る</a>
+        <a class="button" href="/app/careers">職歴を編集・保存する</a>
+        <a class="button secondary" href="/app/preview">職務経歴書をプレビュー/出力</a>
       </div>
     </div>
   </section>

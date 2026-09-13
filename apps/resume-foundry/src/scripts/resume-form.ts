@@ -20,9 +20,11 @@ import type { ResumePayload, SkillCategoryMap, TeamRoleGroup } from '../features
 
 interface BootstrapPayload {
   initialResume: ResumePayload;
+  persistLocalDraft?: boolean;
   skillCategories: SkillCategoryMap;
   teamRoles: TeamRoleGroup[];
   endpoints: {
+    saveCareers?: string;
     summary: string;
     preview: string;
     downloadPdf: string;
@@ -35,6 +37,8 @@ interface AppState {
   aiConsent: boolean;
   summaryLoading: boolean;
   summaryError: string;
+  saveLoading?: boolean;
+  saveMessage?: string;
   validationMessages: string[];
 }
 
@@ -140,11 +144,15 @@ function renderSkills(resume: ResumePayload, categories: ReturnType<typeof categ
 }
 
 function renderProjects(companyIndex: number, company: ResumePayload['companies'][number], roleGroups: TeamRoleGroup[]): string {
+  if (!company.projects.length) {
+    return '<p class="empty-note">特にプロジェクトに分かれない場合は、上の「業務概要」欄に担当業務を入力してください。</p>';
+  }
+
   return company.projects
     .map(
       (project, projectIndex) => `
       <div class="nested-item">
-        <div class="item-heading"><strong>プロジェクト ${projectIndex + 1}</strong><button type="button" class="btn btn-quiet" data-action="remove-project" data-company-index="${companyIndex}" data-project-index="${projectIndex}" ${company.projects.length === 1 ? 'disabled' : ''}>削除</button></div>
+        <div class="item-heading"><strong>プロジェクト ${projectIndex + 1}</strong><button type="button" class="btn btn-quiet" data-action="remove-project" data-company-index="${companyIndex}" data-project-index="${projectIndex}">削除</button></div>
         <div class="field-grid">
           <div class="field"><label>期間</label>
             <div class="field-grid">
@@ -172,7 +180,7 @@ function renderProjects(companyIndex: number, company: ResumePayload['companies'
               ? `<input name="companies[${companyIndex}][projects][${projectIndex}][role_custom]" value="${escapeHtml(project.role_custom)}" placeholder="具体的な役割を入力">`
               : ''
           }</div>
-          <div class="field full"><label>プロジェクト名</label><input required name="companies[${companyIndex}][projects][${projectIndex}][name]" value="${escapeHtml(project.name)}" placeholder="例：社内業務支援システム"></div>
+          <div class="field full"><label>プロジェクト名</label><input name="companies[${companyIndex}][projects][${projectIndex}][name]" value="${escapeHtml(project.name)}" placeholder="例：社内業務支援システム"></div>
           <div class="field full"><label>業務内容</label><textarea name="companies[${companyIndex}][projects][${projectIndex}][description]" placeholder="目的、担当内容、工夫した点や成果を入力してください">${escapeHtml(project.description)}</textarea></div>
           <div class="field"><label>担当工程</label><input name="companies[${companyIndex}][projects][${projectIndex}][processes]" value="${escapeHtml(project.processes)}" placeholder="例：要件整理、設計、実装、テスト"></div>
           <div class="field"><label>チーム構成</label><input name="companies[${companyIndex}][projects][${projectIndex}][team]" value="${escapeHtml(project.team)}" placeholder="例：開発3名、利用部門2名"></div>
@@ -242,6 +250,7 @@ function renderFormHtml(state: AppState, bootstrap: BootstrapPayload): string {
 
   return `
     <form id="resume-form">
+      ${state.saveMessage ? `<div class="validation-summary success-summary" role="status"><strong>${escapeHtml(state.saveMessage)}</strong></div>` : ''}
       ${renderValidation(state.validationMessages)}
       <section class="section-card">
         <div class="section-heading"><div><h2>基本情報</h2><p>書類のヘッダーに表示する情報</p></div></div>
@@ -288,12 +297,27 @@ function renderFormHtml(state: AppState, bootstrap: BootstrapPayload): string {
         <div class="field"><textarea name="considerations" maxlength="5000" placeholder="例：通院、勤務時間、作業環境などに関する配慮事項">${escapeHtml(state.resume.considerations)}</textarea></div>
       </section>
 
-      <p class="draft-note">入力内容はこのブラウザに下書きとして自動保存されます。共有端末では作業後に下書きをクリアしてください。</p>
+      ${
+        bootstrap.persistLocalDraft === false
+          ? '<p class="draft-note">入力内容は「Cloudflare D1へ保存」を押した時にアカウントへ保存されます。</p>'
+          : '<p class="draft-note">入力内容はこのブラウザに下書きとして自動保存されます。共有端末では作業後に下書きをクリアしてください。</p>'
+      }
       <div class="form-actions">
+        ${
+          bootstrap.endpoints.saveCareers
+            ? `<button type="button" class="btn btn-primary" data-action="save-d1" ${state.saveLoading ? 'disabled' : ''}>${
+                state.saveLoading ? 'D1へ保存中...' : 'Cloudflare D1へ保存'
+              }</button>`
+            : ''
+        }
         <button type="button" class="btn btn-secondary" data-action="print-preview">プレビューを印刷</button>
         <button type="button" class="btn btn-secondary" data-action="download-pdf">PDFをダウンロード</button>
         <button type="button" class="btn btn-secondary" data-action="download-docx">DOCXをダウンロード</button>
-        <button type="button" class="btn btn-quiet" data-action="clear-draft">下書きをクリア</button>
+        ${
+          bootstrap.persistLocalDraft === false
+            ? ''
+            : '<button type="button" class="btn btn-quiet" data-action="clear-draft">下書きをクリア</button>'
+        }
       </div>
     </form>`;
 }
@@ -384,7 +408,11 @@ async function parseErrorMessage(response: Response): Promise<{ message: string;
   }
 }
 
-function saveDraft(resume: ResumePayload): void {
+function saveDraft(resume: ResumePayload, enabled: boolean): void {
+  if (!enabled) {
+    return;
+  }
+
   try {
     const { as_of_date, ...draft } = resume;
     localStorage.setItem(draftStorageKey, JSON.stringify(draft));
@@ -393,7 +421,11 @@ function saveDraft(resume: ResumePayload): void {
   }
 }
 
-function loadDraft(initialResume: ResumePayload): ResumePayload {
+function loadDraft(initialResume: ResumePayload, enabled: boolean): ResumePayload {
+  if (!enabled) {
+    return initialResume;
+  }
+
   try {
     const raw = localStorage.getItem(draftStorageKey);
     if (!raw) {
@@ -508,12 +540,52 @@ async function handleGenerateSummary(state: AppState, bootstrap: BootstrapPayloa
     } else {
       state.resume.summary = payload.summary;
       state.validationMessages = [];
-      saveDraft(state.resume);
+      saveDraft(state.resume, bootstrap.persistLocalDraft !== false);
     }
   } catch {
     state.summaryError = '職務要約を生成できませんでした。';
   } finally {
     state.summaryLoading = false;
+    render(state, bootstrap, root);
+  }
+}
+
+async function handleSaveD1(state: AppState, bootstrap: BootstrapPayload, root: HTMLElement): Promise<void> {
+  syncStateFromForm(state, root);
+  const form = root.querySelector<HTMLFormElement>('#resume-form');
+  if (!form?.reportValidity()) {
+    return;
+  }
+
+  state.saveLoading = true;
+  state.saveMessage = '';
+  render(state, bootstrap, root);
+
+  try {
+    const endpoint = bootstrap.endpoints.saveCareers || '/api/careers';
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(state.resume),
+    });
+
+    const payload = await parseErrorMessage(response);
+    if (!response.ok) {
+      state.validationMessages = flattenErrors(payload.errors);
+      if (!state.validationMessages.length && payload.message) {
+        state.validationMessages = [payload.message];
+      }
+    } else {
+      state.saveMessage = 'Cloudflare D1に職歴データを保存しました。';
+      state.validationMessages = [];
+      saveDraft(state.resume, bootstrap.persistLocalDraft !== false);
+    }
+  } catch {
+    state.validationMessages = ['Cloudflare D1への保存処理中に通信エラーが発生しました。'];
+  } finally {
+    state.saveLoading = false;
     render(state, bootstrap, root);
   }
 }
@@ -526,7 +598,7 @@ export function initResumeForm(): void {
   }
 
   const state: AppState = {
-    resume: loadDraft(bootstrap.initialResume),
+    resume: loadDraft(bootstrap.initialResume, bootstrap.persistLocalDraft !== false),
     aiConsent: false,
     summaryLoading: false,
     summaryError: '',
@@ -555,7 +627,7 @@ export function initResumeForm(): void {
     }
 
     updatePreview(state);
-    saveDraft(state.resume);
+    saveDraft(state.resume, bootstrap.persistLocalDraft !== false);
   });
 
   root.addEventListener('change', (event) => {
@@ -566,7 +638,7 @@ export function initResumeForm(): void {
 
     syncStateFromForm(state, root);
     updatePreview(state);
-    saveDraft(state.resume);
+    saveDraft(state.resume, bootstrap.persistLocalDraft !== false);
 
     if (target instanceof HTMLInputElement && target.type === 'checkbox') {
       render(state, bootstrap, root);
@@ -626,7 +698,7 @@ export function initResumeForm(): void {
         const companyIndex = Number(target.dataset.companyIndex);
         const projectIndex = Number(target.dataset.projectIndex);
         const company = state.resume.companies[companyIndex];
-        if (company && company.projects.length > 1) {
+        if (company) {
           company.projects.splice(projectIndex, 1);
         }
         break;
@@ -641,6 +713,9 @@ export function initResumeForm(): void {
         }
         break;
       }
+      case 'save-d1':
+        await handleSaveD1(state, bootstrap, root);
+        return;
       case 'generate-summary':
         await handleGenerateSummary(state, bootstrap, root);
         return;
@@ -651,6 +726,9 @@ export function initResumeForm(): void {
         await handleDownload(state, bootstrap, root, 'docx');
         return;
       case 'clear-draft':
+        if (bootstrap.persistLocalDraft === false) {
+          return;
+        }
         if (!window.confirm('この端末に保存した入力中の下書きを削除しますか？')) {
           return;
         }
@@ -668,7 +746,7 @@ export function initResumeForm(): void {
         return;
     }
 
-    saveDraft(state.resume);
+    saveDraft(state.resume, bootstrap.persistLocalDraft !== false);
     render(state, bootstrap, root);
   });
 }

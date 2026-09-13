@@ -74,17 +74,42 @@ function renderSkills(skills: ResumeSkill[]): string {
 }
 
 function renderProjects(projects: ResumeProject[]): string {
-  return projects
+  const validProjects = projects.filter(
+    (project) =>
+      project.name ||
+      project.description ||
+      project.processes ||
+      project.technologies ||
+      project.role ||
+      project.role_custom ||
+      project.team,
+  );
+
+  if (!validProjects.length) {
+    return '';
+  }
+
+  return validProjects
     .map((project) => {
       const projectPeriod = [project.period_from, project.period_to].filter(Boolean).join('〜');
+      const periodText = projectPeriod ? `（${escapeHtml(projectPeriod)}）` : '';
+      const projectTitle = project.name
+        ? `■ ${escapeHtml(project.name)}${periodText}`
+        : periodText
+        ? `■ ${periodText}`
+        : '';
+
+      const roleStr = displayRole(project);
+      const teamStr = project.team;
+      const roleTeamText = [roleStr, teamStr].filter(Boolean).map(escapeHtml).join(' / ');
 
       return `
         <div class="project-block">
-          <p class="project-title">■ ${escapeHtml(project.name)}（${escapeHtml(projectPeriod)}）</p>
-          <p class="project-detail">${withBreaks(project.description)}</p>
-          <p class="project-detail"><b>【担当工程】</b><br>${withBreaks(project.processes)}</p>
-          <p class="project-detail"><b>【使用技術・DB・OS】</b><br>${withBreaks(project.technologies)}</p>
-          <p class="project-detail"><b>【組織・役割】</b><br>${withBreaks(displayRole(project))} / ${withBreaks(project.team)}</p>
+          ${projectTitle ? `<p class="project-title">${projectTitle}</p>` : ''}
+          ${project.description ? `<p class="project-detail">${withBreaks(project.description)}</p>` : ''}
+          ${project.processes ? `<p class="project-detail"><b>【担当工程】</b><br>${withBreaks(project.processes)}</p>` : ''}
+          ${project.technologies ? `<p class="project-detail"><b>【使用技術・DB・OS】</b><br>${withBreaks(project.technologies)}</p>` : ''}
+          ${roleTeamText ? `<p class="project-detail"><b>【組織・役割】</b><br>${withBreaks(roleTeamText)}</p>` : ''}
         </div>`;
     })
     .join('');

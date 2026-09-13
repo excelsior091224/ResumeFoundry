@@ -76,7 +76,7 @@ export function createBlankCompany(): ResumeCompany {
     established: '',
     capital: '',
     employees: '',
-    projects: [createBlankProject()],
+    projects: [],
   };
 }
 

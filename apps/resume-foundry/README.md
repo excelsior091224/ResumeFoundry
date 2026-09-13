@@ -8,7 +8,7 @@ This is the only application in the `excelsior091224/ResumeFoundry` repository. 
 - Cloudflare D1 for reusable career data
 - Cloudflare R2 for temporary or paid export files
 - Optional Cloudflare Workers AI or external AI APIs for summaries and reviews
-- Clerk is the first authentication candidate for MVP validation
+- Clerk authentication (email/password and social providers)
 
 ## Commands
 
@@ -17,6 +17,7 @@ npm run dev
 npm run build
 npm run preview
 npm run db:migrate:local
+npm run check:bundle-secrets
 ```
 
 ## One-shot resume generator on Workers
@@ -60,7 +61,33 @@ wrangler secret put GEMINI_API_KEY
 
 `GEMINI_MODEL` defaults to `gemini-3.5-flash-lite` in `wrangler.jsonc`. Override it through Wrangler environment variables if needed.
 
-The D1 database (`astro-resume-foundry`) and R2 bucket (`astro-resume-foundry-exports`) referenced in `wrangler.jsonc` are provisioned for the future saved career-log SaaS features; the one-shot resume generator does not use them.
+The D1 database (`astro-resume-foundry`) stores Clerk user mappings and saved career data. Clerk manages credentials, OAuth connections, email verification, and sessions. The R2 bucket (`astro-resume-foundry-exports`) is reserved for future export storage. The one-shot resume generator does not use them.
+
+## Authentication
+
+The `/app/*` pages and `/api/careers` endpoints require Clerk authentication. Clerk's prebuilt sign-in and sign-up screens automatically show the social providers enabled for the application in the Clerk Dashboard. Career records remain in D1 and are isolated by Clerk's user ID.
+
+Copy `.dev.vars.example` to `.dev.vars`, then add the development keys from the Clerk Dashboard. The public key must also be available as `PUBLIC_CLERK_PUBLISHABLE_KEY` when `astro build` runs so that Clerk's browser UI can initialize:
+
+```bash
+cp .dev.vars.example .dev.vars
+```
+
+For production, provide `PUBLIC_CLERK_PUBLISHABLE_KEY` to the build environment and configure the Worker runtime bindings. The publishable key is public and can be a Wrangler variable; the secret key must be an encrypted secret:
+
+```bash
+wrangler secret put CLERK_SECRET_KEY
+```
+
+`npm run build` temporarily hides `.dev.vars`, passes only the publishable key to Astro, and fails if a Clerk secret is found in `dist`. Do not replace this command with a direct `astro build` in CI or deployment automation.
+
+Enable Google, GitHub, or other OAuth providers under **Clerk Dashboard → Configure → SSO connections**. No application code change is required when providers are enabled.
+
+Run the D1 migrations before starting the application:
+
+```bash
+npm run db:migrate:local
+```
 
 ## Deployment
 
@@ -69,6 +96,8 @@ wrangler login   # or set CLOUDFLARE_API_TOKEN
 npm run build
 npm run deploy
 ```
+
+`npm run deploy` runs the safe build, scans the output for Clerk secret keys, applies pending remote D1 migrations, and only then deploys the Worker. Configure the production Clerk bindings before running it.
 
 Production: https://resumefoundries.com (custom domain mapped to the deployed Worker `astro-resume-foundry`).
 

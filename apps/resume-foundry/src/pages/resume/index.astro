@@ -4,10 +4,12 @@ import skillCategories from '../../data/skills.json';
 import teamRoles from '../../data/team-roles.json';
 import { createBlankResume } from '../../features/resume/defaults';
 import { renderResumePreviewHtml } from '../../features/resume/render';
+import { serializeJsonForHtml } from '../../features/resume/serialize';
 
 const initialResume = createBlankResume();
 const bootstrap = {
   initialResume,
+  persistLocalDraft: true,
   skillCategories,
   teamRoles,
   endpoints: {
@@ -56,7 +58,7 @@ const bootstrap = {
     </section>
   </div>
 
-  <script is:inline id="resume-bootstrap" type="application/json" set:html={JSON.stringify(bootstrap)}></script>
+  <script is:inline id="resume-bootstrap" type="application/json" set:html={serializeJsonForHtml(bootstrap)}></script>
   <script>
     import { initResumeForm } from '../../scripts/resume-form';
 

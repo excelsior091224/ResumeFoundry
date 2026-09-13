@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const { isAuthenticated } = Astro.locals.auth();
 ---
 <BaseLayout title="Resume Foundry | エンジニア向け職務経歴ログ">
   <section class="container hero">
@@ -8,7 +10,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <h1>職務経歴は、転職直前ではなく日々育てる。</h1>
       <p>案件、担当工程、技術、成果、工夫した点を継続的に記録し、必要な時に職務経歴書・スキルシート・自己PRへ変換するサービスです。</p>
       <div class="actions">
-        <a class="button" href="/app">MVP画面を見る</a>
+        {
+          isAuthenticated ? (
+            <a class="button" href="/app">ダッシュボードを開く</a>
+          ) : (
+            <>
+              <a class="button" href="/auth/register">無料で始める</a>
+              <a class="button secondary" href="/auth/login">ログイン</a>
+            </>
+          )
+        }
       </div>
     </div>
     <aside class="card">

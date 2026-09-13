@@ -1,24 +1,81 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { env } from 'cloudflare:workers';
+import { ensureClerkUserExists, getCareerData } from '../../features/careers/db';
+import { createBlankResume } from '../../features/resume/defaults';
+import { renderResumePreviewHtml } from '../../features/resume/render';
+import { serializeJsonForHtml } from '../../features/resume/serialize';
+
+const auth = Astro.locals.auth();
+if (!auth.isAuthenticated) {
+  return auth.redirectToSignIn({ returnBackUrl: Astro.url.href });
+}
+const { userId } = auth;
+
+const db = env.DB;
+if (db) {
+  await ensureClerkUserExists(db, userId);
+}
+const resume = db ? await getCareerData(db, userId) : createBlankResume();
+const previewHtml = renderResumePreviewHtml(resume);
 ---
+
 <BaseLayout title="職務経歴書プレビュー | Resume Foundry">
   <section class="container stack">
     <div class="card no-print">
-      <span class="eyebrow">Resume preview</span>
-      <h1>保存データから職務経歴書を生成</h1>
-      <p>初期PDF出力はブラウザ印刷を使う軽量方式にし、DOCXや複数テンプレートを有料機能候補にします。</p>
-      <div class="actions"><button class="button" onclick="window.print()">PDFとして印刷</button></div>
+      <span class="eyebrow">Cloudflare D1 Export</span>
+      <h1>D1保存データから職務経歴書をプレビュー・出力</h1>
+      <p>Cloudflare D1に記録された最新の職歴・スキル情報から生成したプレビューです。</p>
+      <div class="actions">
+        <button id="btn-download-pdf" class="button">PDFをダウンロード</button>
+        <button id="btn-download-docx" class="button secondary">DOCXをダウンロード</button>
+        <button class="button secondary" onclick="window.print()">印刷</button>
+        <a class="button secondary" href="/app/careers">職歴を編集する</a>
+      </div>
     </div>
-    <article class="preview-paper">
-      <h1>職務経歴書</h1>
-      <p>氏名: サンプル 太郎</p>
-      <h2>職務要約</h2>
-      <p>Webアプリケーションの設計、開発、運用を中心に、業務改善と開発基盤整備を担当。</p>
-      <h2>職務経歴</h2>
-      <h3>業務管理システム刷新</h3>
-      <p>担当: 要件整理、Laravel API設計、フロントエンド改善、運用改善。</p>
-      <h2>スキル</h2>
-      <p>PHP / Laravel / JavaScript / Astro / Cloudflare Workers / SQL</p>
-    </article>
+    <div class="paper-wrap no-print-wrap">
+      <article id="resume-preview" class="paper" set:html={previewHtml}></article>
+    </div>
   </section>
+
+  <script is:inline id="preview-resume-data" type="application/json" set:html={serializeJsonForHtml(resume)}></script>
+  <script>
+    const dataElement = document.getElementById('preview-resume-data');
+    if (dataElement?.textContent) {
+      const resume = JSON.parse(dataElement.textContent);
+
+      async function downloadFile(endpoint: string, fallbackName: string) {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(resume),
+        });
+
+        if (!response.ok) {
+          alert('ファイルのダウンロードに失敗しました。');
+          return;
+        }
+
+        const blob = await response.blob();
+        const disposition = response.headers.get('content-disposition');
+        const match = disposition?.match(/filename="?([^";]+)"?/);
+        const fileName = match?.[1] ?? fallbackName;
+
+        const href = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = href;
+        anchor.download = fileName;
+        anchor.click();
+        URL.revokeObjectURL(href);
+      }
+
+      document.getElementById('btn-download-pdf')?.addEventListener('click', () => {
+        downloadFile('/api/resume/download/pdf', 'resume.pdf');
+      });
+
+      document.getElementById('btn-download-docx')?.addEventListener('click', () => {
+        downloadFile('/api/resume/download/docx', 'resume.docx');
+      });
+    }
+  </script>
 </BaseLayout>

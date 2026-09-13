@@ -3,3 +3,6 @@ dist/
 .astro/
 .wrangler/
 .dev.vars
+.dev.vars.build-backup
+.env
+.env.local

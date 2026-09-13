@@ -331,9 +331,9 @@ export function coerceResumeDraft(input: Partial<ResumePayload>): ResumePayload 
       established: trimString(company.established),
       capital: trimString(company.capital),
       employees: trimString(company.employees),
-      projects: (Array.isArray(company.projects) && company.projects.length
+      projects: (Array.isArray(company.projects)
         ? company.projects
-        : [createBlankProject()]
+        : []
       ).map((project) => ({
         ...createBlankProject(),
         ...project,
@@ -462,9 +462,6 @@ export function validateResumePayload(input: unknown): ResumePayload {
       }
       if (!project.is_current && project.period_from && project.period_to && project.period_to < project.period_from) {
         addError(errors, `${projectPath}.period_to`, 'プロジェクトの終了日は開始日以降で入力してください。');
-      }
-      if (!project.name) {
-        addError(errors, `${projectPath}.name`, 'プロジェクト名は必須です。');
       }
       ensureLength(errors, `${projectPath}.name`, 'プロジェクト名', project.name, 200);
       ensureLength(errors, `${projectPath}.description`, '業務内容', project.description, 3000);

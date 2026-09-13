@@ -1,23 +1,84 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import skillCategories from '../../data/skills.json';
+import teamRoles from '../../data/team-roles.json';
+import { env } from 'cloudflare:workers';
+import { ensureClerkUserExists, getCareerData, getCareerStats } from '../../features/careers/db';
+import { createBlankResume } from '../../features/resume/defaults';
+import { renderResumePreviewHtml } from '../../features/resume/render';
+import { serializeJsonForHtml } from '../../features/resume/serialize';
+
+const auth = Astro.locals.auth();
+if (!auth.isAuthenticated) {
+  return auth.redirectToSignIn({ returnBackUrl: Astro.url.href });
+}
+const { userId } = auth;
+
+const db = env.DB;
+if (db) {
+  await ensureClerkUserExists(db, userId);
+}
+const initialResume = db ? await getCareerData(db, userId) : createBlankResume();
+const stats = db ? await getCareerStats(db, userId) : { companyCount: 0, projectCount: 0, skillCount: 0, certificationCount: 0, linkCount: 0 };
+
+const bootstrap = {
+  initialResume,
+  persistLocalDraft: false,
+  skillCategories,
+  teamRoles,
+  endpoints: {
+    saveCareers: '/api/careers',
+    summary: '/api/resume/summary',
+    preview: '/api/resume/preview',
+    downloadPdf: '/api/resume/download/pdf',
+    downloadDocx: '/api/resume/download/docx',
+  },
+};
 ---
-<BaseLayout title="職歴ログ | Resume Foundry">
-  <section class="container stack">
-    <div class="card">
-      <span class="eyebrow">Career logging</span>
-      <h1>職歴・案件・スキルを記録する</h1>
-      <p>現段階は画面設計の実装です。フォーム送信は認証とD1接続後にAPI Routeへ接続します。</p>
-    </div>
-    <form class="panel stack">
-      <div class="form-grid">
-        <label>会社・契約先<input name="company" placeholder="例：株式会社サンプル / フリーランス" /></label>
-        <label>雇用・契約形態<select name="employment_type"><option>正社員</option><option>業務委託</option><option>フリーランス</option><option>その他</option></select></label>
-        <label>案件名<input name="project" placeholder="例：業務管理システム刷新" /></label>
-        <label>役割<input name="role" placeholder="例：バックエンド設計・実装" /></label>
+
+<BaseLayout
+  title="職歴・案件・スキル管理 | Resume Foundry"
+  description="Cloudflare D1に職歴・案件・スキルを保存・整理する管理画面です。"
+>
+  <div class="resume-shell">
+    <section class="resume-topbar-wrap">
+      <div class="topbar topbar-local">
+        <div class="brand"><span class="brand-mark">R</span><span>Resume Foundry (D1モード)</span></div>
+        <small>職歴データをCloudflare D1へ保存・一括整理できます</small>
       </div>
-      <label>使用技術<input name="skills" placeholder="Laravel, Astro, Cloudflare Workers, D1" /></label>
-      <label>成果・工夫した点<textarea name="achievements" placeholder="数字、改善内容、担当範囲を記録"></textarea></label>
-      <div class="actions no-print"><button class="button" type="button">保存機能は認証/D1接続後に有効化</button></div>
-    </form>
-  </section>
+    </section>
+
+    <section class="workspace workspace-resume">
+      <section class="form-panel">
+        <div class="intro">
+          <span class="eyebrow">Cloudflare D1 Career Database</span>
+          <h1>職歴・案件・スキルを記録する</h1>
+          <p>入力・更新したデータはCloudflare D1に保存され、ダッシュボードや職務経歴書プレビューに即座に反映されます。</p>
+        </div>
+        <div id="resume-form-root"></div>
+        <noscript>
+          <p class="validation-summary">このページは動的な行追加・D1同期のため JavaScript が必要です。</p>
+        </noscript>
+      </section>
+
+      <section class="preview-panel">
+        <div class="preview-label">
+          <span>Live preview</span>
+          <span id="resume-preview-stats">
+            {stats.companyCount} companies · {stats.projectCount} projects · {stats.skillCount} skills
+          </span>
+        </div>
+        <div class="paper-wrap">
+          <div id="resume-preview" class="paper" set:html={renderResumePreviewHtml(initialResume)}></div>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script is:inline id="resume-bootstrap" type="application/json" set:html={serializeJsonForHtml(bootstrap)}></script>
+  <script>
+    import { initResumeForm } from '../../scripts/resume-form';
+
+    initResumeForm();
+  </script>
 </BaseLayout>
