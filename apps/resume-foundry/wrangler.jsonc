@@ -2,10 +2,28 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "astro-resume-foundry",
   "compatibility_date": "2026-09-05",
+  "workers_dev": false,
+  "preview_urls": false,
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS"
   },
+  "routes": [
+    {
+      "pattern": "resumefoundries.com",
+      "zone_name": "resumefoundries.com",
+      "custom_domain": true,
+      "enabled": true,
+      "previews_enabled": false
+    },
+    {
+      "pattern": "www.resumefoundries.com",
+      "zone_name": "resumefoundries.com",
+      "custom_domain": true,
+      "enabled": true,
+      "previews_enabled": false
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
