@@ -89,6 +89,10 @@ Run the D1 migrations before starting the application:
 npm run db:migrate:local
 ```
 
+## Analytics
+
+Google Tag Manager container `GTM-5N2CL6R2` is loaded from the shared Astro layout on every HTML page. Google Analytics tags and consent settings remain managed in the Google Tag Manager container.
+
 ## Deployment
 
 ```bash
