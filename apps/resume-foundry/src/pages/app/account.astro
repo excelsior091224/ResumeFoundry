@@ -1,0 +1,100 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const auth = Astro.locals.auth();
+if (!auth.isAuthenticated) {
+  return auth.redirectToSignIn({ returnBackUrl: Astro.url.href });
+}
+---
+<BaseLayout title="アカウント設定 | Resume Foundry">
+  <section class="container stack">
+    <div class="card">
+      <span class="eyebrow">Account</span>
+      <h1>アカウント設定</h1>
+      <p>アカウントとResume Foundryに保存されているデータを管理します。</p>
+    </div>
+
+    <div class="card danger-zone">
+      <h2>退会する</h2>
+      <p>
+        退会すると、Clerkの認証アカウントと、D1に保存されたプロフィール、職歴、案件、スキル、資格、リンクを完全に削除します。この操作は取り消せません。
+      </p>
+      <p>必要な職務経歴書は、退会前にPDFまたはDOCXで保存してください。</p>
+
+      <form id="delete-account-form" class="stack">
+        <label>
+          確認のため「退会する」と入力してください
+          <input
+            id="delete-account-confirmation"
+            name="confirmation"
+            type="text"
+            autocomplete="off"
+            required
+          />
+        </label>
+        <label class="confirmation-check">
+          <input id="delete-account-acknowledgement" type="checkbox" required />
+          保存データを復元できないことを理解しました
+        </label>
+        <div>
+          <button class="danger-button" type="submit">アカウントと保存データを削除する</button>
+        </div>
+        <p id="delete-account-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
+  <script>
+    import { $clerkStore } from '@clerk/astro/client';
+
+    const form = document.querySelector<HTMLFormElement>('#delete-account-form');
+    const confirmation = document.querySelector<HTMLInputElement>('#delete-account-confirmation');
+    const acknowledgement = document.querySelector<HTMLInputElement>('#delete-account-acknowledgement');
+    const status = document.querySelector<HTMLParagraphElement>('#delete-account-status');
+    const button = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!confirmation || !acknowledgement || !status || !button) {
+        return;
+      }
+      if (confirmation.value !== '退会する' || !acknowledgement.checked) {
+        status.textContent = '確認文字列とチェック項目を確認してください。';
+        return;
+      }
+
+      button.disabled = true;
+      status.textContent = 'アカウントと保存データを削除しています…';
+
+      let response: Response;
+      try {
+        response = await fetch('/api/account', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ confirmation: confirmation.value }),
+        });
+      } catch {
+        status.textContent = '通信に失敗しました。接続を確認して、もう一度実行してください。';
+        button.disabled = false;
+        return;
+      }
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+        status.textContent = payload?.message ?? '退会処理に失敗しました。';
+        button.disabled = false;
+        return;
+      }
+
+      const clerk = $clerkStore.get();
+      if (clerk) {
+        try {
+          await clerk.signOut();
+        } catch {
+          // The API also clears site cookies; continue to the signed-out landing page.
+        }
+      }
+      window.location.replace('/?account_deleted=1');
+    });
+  </script>
+</BaseLayout>

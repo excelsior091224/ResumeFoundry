@@ -1,6 +1,12 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { ensureClerkUserExists, getCareerData, getCareerStats, saveCareerData } from '../../../features/careers/db';
+import {
+  AccountDeletedError,
+  ensureClerkUserExists,
+  getCareerData,
+  getCareerStats,
+  saveCareerData,
+} from '../../../features/careers/db';
 import { parseRequestBody } from '../../../features/resume/request';
 import { ResumeValidationError, validateResumePayload } from '../../../features/resume/validation';
 
@@ -27,6 +33,9 @@ export const GET: APIRoute = async ({ locals }) => {
 
     return Response.json({ data, stats });
   } catch (error) {
+    if (error instanceof AccountDeletedError) {
+      return Response.json({ message: error.message }, { status: 410 });
+    }
     return Response.json(
       { message: error instanceof Error ? error.message : 'D1からのデータ取得に失敗しました' },
       { status: 500 },
@@ -58,6 +67,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     return Response.json({ success: true, message: '職歴データをD1へ保存しました', data: payload, stats });
   } catch (error) {
+    if (error instanceof AccountDeletedError) {
+      return Response.json({ message: error.message }, { status: 410 });
+    }
     if (error instanceof ResumeValidationError) {
       return Response.json({ message: error.message, errors: error.errors }, { status: 422 });
     }

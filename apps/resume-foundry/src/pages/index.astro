@@ -2,8 +2,16 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const { isAuthenticated } = Astro.locals.auth();
+const accountDeleted = Astro.url.searchParams.get('account_deleted') === '1';
 ---
 <BaseLayout title="Resume Foundry | エンジニア向け職務経歴ログ">
+  {
+    accountDeleted && (
+      <div class="container">
+        <p class="success-notice" role="status">退会が完了しました。アカウントと保存データを削除しました。</p>
+      </div>
+    )
+  }
   <section class="container hero">
     <div>
       <span class="eyebrow">Career log SaaS</span>

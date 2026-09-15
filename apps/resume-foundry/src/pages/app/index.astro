@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { env } from 'cloudflare:workers';
-import { ensureClerkUserExists, getCareerStats } from '../../features/careers/db';
+import { AccountDeletedError, ensureClerkUserExists, getCareerStats } from '../../features/careers/db';
 
 const auth = Astro.locals.auth();
 if (!auth.isAuthenticated) {
@@ -14,7 +14,14 @@ const clerkUser = await Astro.locals.currentUser();
 const email = clerkUser?.primaryEmailAddress?.emailAddress;
 const displayName = clerkUser?.fullName || clerkUser?.firstName || '';
 if (db) {
-  await ensureClerkUserExists(db, userId, email, displayName);
+  try {
+    await ensureClerkUserExists(db, userId, email, displayName);
+  } catch (error) {
+    if (error instanceof AccountDeletedError) {
+      return Astro.redirect('/?account_deleted=1', 303);
+    }
+    throw error;
+  }
 }
 const stats = db
   ? await getCareerStats(db, userId)

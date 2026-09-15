@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import skillCategories from '../../data/skills.json';
 import teamRoles from '../../data/team-roles.json';
 import { env } from 'cloudflare:workers';
-import { ensureClerkUserExists, getCareerData, getCareerStats } from '../../features/careers/db';
+import { AccountDeletedError, ensureClerkUserExists, getCareerData, getCareerStats } from '../../features/careers/db';
 import { createBlankResume } from '../../features/resume/defaults';
 import { renderResumePreviewHtml } from '../../features/resume/render';
 import { serializeJsonForHtml } from '../../features/resume/serialize';
@@ -16,7 +16,14 @@ const { userId } = auth;
 
 const db = env.DB;
 if (db) {
-  await ensureClerkUserExists(db, userId);
+  try {
+    await ensureClerkUserExists(db, userId);
+  } catch (error) {
+    if (error instanceof AccountDeletedError) {
+      return Astro.redirect('/?account_deleted=1', 303);
+    }
+    throw error;
+  }
 }
 const initialResume = db ? await getCareerData(db, userId) : createBlankResume();
 const stats = db ? await getCareerStats(db, userId) : { companyCount: 0, projectCount: 0, skillCount: 0, certificationCount: 0, linkCount: 0 };

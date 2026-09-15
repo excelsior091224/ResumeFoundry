@@ -13,6 +13,18 @@ import teamRoleGroups from '../../data/team-roles.json';
 
 const knownTeamRoles = new Set(teamRoleGroups.flatMap((group) => group.roles.map((role) => role.value)));
 
+async function hashUserId(userId: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(userId));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export class AccountDeletedError extends Error {
+  constructor() {
+    super('このアカウントは削除済みです。');
+    this.name = 'AccountDeletedError';
+  }
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -38,6 +50,21 @@ export async function ensureClerkUserExists(
   email?: string | null,
   displayName?: string | null,
 ): Promise<void> {
+  const userIdHash = await hashUserId(userId);
+  const deletedUser = await db
+    .prepare(
+      `SELECT 1
+       FROM deleted_user_tombstones
+       WHERE user_id_hash = ?
+         AND deleted_at >= datetime('now', '-1 day')`,
+    )
+    .bind(userIdHash)
+    .first();
+
+  if (deletedUser) {
+    throw new AccountDeletedError();
+  }
+
   const normalizedEmail = email?.trim().toLowerCase() || `${userId}@clerk.invalid`;
   const normalizedDisplayName = displayName?.trim() || '';
   const hasVerifiedEmail = email?.trim() ? 1 : 0;
@@ -64,6 +91,37 @@ export async function ensureClerkUserExists(
          ON CONFLICT(user_id) DO NOTHING`,
       )
       .bind(crypto.randomUUID(), userId, new Date().toISOString().split('T')[0]),
+  ]);
+}
+
+export async function deleteUserData(db: D1Database, userId: string): Promise<void> {
+  const userIdHash = await hashUserId(userId);
+
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO deleted_user_tombstones (user_id_hash)
+         VALUES (?)
+         ON CONFLICT(user_id_hash) DO UPDATE SET deleted_at = CURRENT_TIMESTAMP`,
+      )
+      .bind(userIdHash),
+    db.prepare(`DELETE FROM deleted_user_tombstones WHERE deleted_at < datetime('now', '-1 day')`),
+    db
+      .prepare(
+        `DELETE FROM project_skills
+         WHERE project_id IN (SELECT id FROM projects WHERE user_id = ?)
+            OR skill_id IN (SELECT id FROM skills WHERE user_id = ?)`,
+      )
+      .bind(userId, userId),
+    db.prepare('DELETE FROM ai_generations WHERE user_id = ?').bind(userId),
+    db.prepare('DELETE FROM exports WHERE user_id = ?').bind(userId),
+    db.prepare('DELETE FROM links WHERE user_id = ?').bind(userId),
+    db.prepare('DELETE FROM certifications WHERE user_id = ?').bind(userId),
+    db.prepare('DELETE FROM projects WHERE user_id = ?').bind(userId),
+    db.prepare('DELETE FROM skills WHERE user_id = ?').bind(userId),
+    db.prepare('DELETE FROM companies WHERE user_id = ?').bind(userId),
+    db.prepare('DELETE FROM profiles WHERE user_id = ?').bind(userId),
+    db.prepare('DELETE FROM users WHERE id = ?').bind(userId),
   ]);
 }
 

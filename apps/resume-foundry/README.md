@@ -101,6 +101,8 @@ Google Tag Manager container `GTM-5N2CL6R2` is loaded from the shared Astro layo
 
 The registration page links to the terms and privacy policy. Before introducing paid plans, obtain a Japanese legal review and add the operator disclosures and transaction terms required for the paid offering.
 
+Authenticated users can permanently delete their Clerk account and all associated D1 career data from `/app/account`. The deletion endpoint requires an authenticated same-origin request and the exact Japanese confirmation phrase shown on the page.
+
 ## Deployment
 
 ```bash
