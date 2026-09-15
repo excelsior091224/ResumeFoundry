@@ -1,0 +1,151 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="プライバシーポリシー | Resume Foundry"
+  description="Resume Foundryにおける個人情報その他の利用者情報の取扱いを説明します。"
+>
+  <article class="container legal">
+    <header class="legal-header">
+      <span class="eyebrow">Privacy Policy</span>
+      <h1>プライバシーポリシー</h1>
+      <p>
+        ギムレット（以下「運営者」）は、Resume Foundry（以下「本サービス」）における利用者情報を、以下の方針に従って取り扱います。
+      </p>
+    </header>
+
+    <section class="legal-section">
+      <h2>1. 取得・処理する情報</h2>
+      <h3>アカウント情報</h3>
+      <ul>
+        <li>認証サービスが発行するユーザーID</li>
+        <li>メールアドレス、表示名、プロフィール画像</li>
+        <li>Google、GitHub等の接続済み認証プロバイダーに関する情報</li>
+      </ul>
+      <p>パスワードおよびソーシャルログインの認証情報はClerkが管理し、運営者のデータベースには保存しません。</p>
+
+      <h3>職務経歴情報</h3>
+      <ul>
+        <li>氏名、基準日、職務要約、得意業務、自己PR、配慮事項</li>
+        <li>勤務先、雇用形態、在籍期間、案件、役割、担当工程、使用技術、業務内容</li>
+        <li>スキル、経験年数、資格、取得日</li>
+        <li>GitHub等の技術系アカウント・ポートフォリオURL</li>
+      </ul>
+
+      <h3>利用・端末情報</h3>
+      <ul>
+        <li>アクセス日時、閲覧ページ、参照元、IPアドレス、ブラウザ・端末情報、Cookie等の識別子</li>
+        <li>エラー、セキュリティイベントその他サービス運用に必要なログ</li>
+      </ul>
+
+      <h3>お問い合わせ情報</h3>
+      <p>氏名、メールアドレス、件名、お問い合わせ内容その他利用者がフォームへ入力した情報を取得します。</p>
+    </section>
+
+    <section class="legal-section">
+      <h2>2. 利用目的</h2>
+      <ul>
+        <li>アカウント登録、本人認証およびセッション管理</li>
+        <li>職務経歴情報の保存、表示、編集、PDF・DOCX生成</li>
+        <li>利用者が同意した場合のAI職務要約生成</li>
+        <li>お問い合わせへの回答および本人確認</li>
+        <li>不正利用の防止、セキュリティ確保、障害調査</li>
+        <li>利用状況の分析、品質改善および新機能の検討</li>
+        <li>重要な変更、障害その他本サービス運営に必要な連絡</li>
+        <li>法令および本サービスの利用規約への対応</li>
+      </ul>
+    </section>
+
+    <section class="legal-section">
+      <h2>3. 保存場所と保存期間</h2>
+      <ol>
+        <li>アカウント向け機能の職務経歴情報は、Cloudflare D1へユーザー単位で保存します。</li>
+        <li>登録不要の公開ジェネレーターの下書きは、利用者のブラウザのlocalStorageへ保存され、運営者のデータベースには保存されません。共有端末では「下書きをクリア」を使用してください。</li>
+        <li>PDF・DOCXはリクエスト時に生成して返却し、現時点では生成物をR2へ永続保存しません。</li>
+        <li>アカウント情報および職務経歴情報は、サービス提供に必要な期間または法令上必要な期間保持します。削除を希望する場合はお問い合わせ窓口から請求してください。</li>
+        <li>認証サービス上のアカウント操作だけでは、D1の職務経歴情報が直ちに自動削除されない場合があります。</li>
+      </ol>
+    </section>
+
+    <section class="legal-section">
+      <h2>4. AI機能における情報送信</h2>
+      <ol>
+        <li>AI職務要約は、利用者が画面上で同意した場合に限り実行します。</li>
+        <li>要約に必要な勤務先、案件、スキルおよび資格情報をGoogleのGemini APIへ送信します。</li>
+        <li>氏名、技術系アカウントURL、自己PRおよび配慮事項は、AI要約用データへ含めません。</li>
+        <li>勤務先・案件情報に個人情報や機密情報を記載した場合は送信対象となり得るため、入力前に内容を確認してください。</li>
+        <li>送信情報はGoogleの契約条件およびプライバシーポリシーに従って処理されます。機密情報、要配慮個人情報または第三者との契約上送信できない情報を入力しないでください。</li>
+      </ol>
+    </section>
+
+    <section class="legal-section">
+      <h2>5. 外部サービス・取扱いの委託</h2>
+      <p>本サービスは、提供に必要な範囲で次の外部サービスを利用します。</p>
+      <ul>
+        <li><strong>Clerk, Inc.</strong>：アカウント登録、認証、ソーシャルログイン、セッション管理</li>
+        <li><strong>Cloudflare, Inc.</strong>：Web配信、セキュリティ、ログ処理、D1データベース等のインフラ</li>
+        <li><strong>Google LLC</strong>：Gemini APIによるAI要約、Google Analyticsによるアクセス解析、Googleフォームによるお問い合わせ受付</li>
+        <li><strong>GitHub, Inc.</strong>：利用者が選択した場合のソーシャルログイン</li>
+      </ul>
+      <p>
+        これらの事業者は国外で情報を処理する場合があります。各事業者における取扱いは、それぞれの利用規約、プライバシーポリシーおよびデータ処理条件に従います。
+      </p>
+    </section>
+
+    <section class="legal-section">
+      <h2>6. Google AnalyticsとCookie</h2>
+      <ol>
+        <li>本サービスはGoogle Tag Managerを通じてGoogle Analytics 4を使用します。</li>
+        <li>Google Analyticsは、Cookie等を利用して閲覧ページ、利用環境、参照元等を収集します。運営者は、個人を直接特定する目的でこれらを利用しません。</li>
+        <li>ブラウザの設定でCookieを無効化できますが、本サービスまたは認証機能の一部が正常に動作しない場合があります。</li>
+        <li>Googleによるデータの取扱いについては、<a class="external-link" href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Googleプライバシーポリシー</a>をご確認ください。</li>
+      </ol>
+    </section>
+
+    <section class="legal-section">
+      <h2>7. 第三者提供</h2>
+      <p>
+        運営者は、本人の同意がある場合、サービス提供に必要な委託を行う場合、事業承継が行われる場合または法令に基づく場合を除き、個人データを第三者へ提供しません。
+      </p>
+    </section>
+
+    <section class="legal-section">
+      <h2>8. 安全管理措置</h2>
+      <p>
+        運営者は、通信の暗号化、認証によるアクセス制御、利用者IDによるデータ分離、秘密情報の暗号化された環境変数での管理、必要最小限の外部送信その他合理的な安全管理措置を講じます。ただし、インターネット通信または利用者端末における完全な安全性を保証するものではありません。
+      </p>
+    </section>
+
+    <section class="legal-section">
+      <h2>9. 利用者の権利</h2>
+      <p>
+        利用者は、法令に従い、自己の保有個人データについて、利用目的の通知、開示、訂正、追加、削除、利用停止、消去または第三者提供の停止を請求できます。請求時には、本人確認に必要な情報の提示をお願いする場合があります。
+      </p>
+    </section>
+
+    <section class="legal-section">
+      <h2>10. 未成年者の利用</h2>
+      <p>未成年者が本サービスを利用する場合、必要に応じて親権者その他の法定代理人の同意を得てください。</p>
+    </section>
+
+    <section class="legal-section">
+      <h2>11. 本ポリシーの変更</h2>
+      <p>
+        法令またはサービス内容の変更に応じて、本ポリシーを改定することがあります。重要な変更は、本サービス上その他合理的な方法で周知します。
+      </p>
+    </section>
+
+    <section class="legal-section">
+      <h2>12. お問い合わせ窓口</h2>
+      <p>
+        個人情報の開示・訂正・削除、アカウントおよび保存データの削除、その他本ポリシーに関するお問い合わせは、<a href="/contact">お問い合わせページ</a>からご連絡ください。
+      </p>
+      <p>
+        運営者：ギムレット<br />
+        <a class="external-link" href="https://lit.link/gimlet202307" target="_blank" rel="noopener noreferrer">運営者プロフィール</a>
+      </p>
+    </section>
+
+    <p class="legal-meta">制定日：2026年9月15日</p>
+  </article>
+</BaseLayout>

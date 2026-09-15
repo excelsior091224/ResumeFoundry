@@ -93,6 +93,14 @@ npm run db:migrate:local
 
 Google Tag Manager container `GTM-5N2CL6R2` is loaded from the shared Astro layout on every HTML page. Google Analytics tags and consent settings remain managed in the Google Tag Manager container.
 
+## Legal and support pages
+
+- `/terms`: terms of service
+- `/privacy`: privacy policy covering Clerk, Cloudflare D1, Google Analytics, Gemini, and stored career data
+- `/contact`: support, personal-data requests, and account/data deletion requests
+
+The registration page links to the terms and privacy policy. Before introducing paid plans, obtain a Japanese legal review and add the operator disclosures and transaction terms required for the paid offering.
+
 ## Deployment
 
 ```bash

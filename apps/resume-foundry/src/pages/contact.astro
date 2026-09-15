@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const contactFormUrl =
+  'https://docs.google.com/forms/d/e/1FAIpQLScGyeWmXeSJ4vKB7g8sIwaTNhbWSGwsvPZp1yfdhJAImdbPYg/viewform?usp=header';
+---
+<BaseLayout
+  title="お問い合わせ | Resume Foundry"
+  description="Resume Foundryへのお問い合わせ、個人情報や保存データに関する請求窓口です。"
+>
+  <article class="container legal">
+    <header class="legal-header">
+      <span class="eyebrow">Contact</span>
+      <h1>お問い合わせ</h1>
+      <p>
+        ご質問、不具合の報告、アカウント・保存データの削除、個人情報に関する請求は、以下のフォームからご連絡ください。
+      </p>
+    </header>
+
+    <section class="card">
+      <h2>Googleフォームを開く</h2>
+      <p>
+        フォームはGoogleのサービス上で開きます。入力した氏名、メールアドレス、お問い合わせ内容は、回答および本人確認に必要な範囲で取り扱います。
+      </p>
+      <div class="actions">
+        <a class="button external-link" href={contactFormUrl} target="_blank" rel="noopener noreferrer">
+          お問い合わせフォーム
+        </a>
+      </div>
+    </section>
+
+    <section class="legal-section">
+      <h2>削除・開示等を請求する場合</h2>
+      <p>
+        対象アカウントのメールアドレスと希望する手続きを記載してください。本人確認が完了するまで、個人情報または保存データの開示・削除を実施できない場合があります。パスワードや認証コードは記載しないでください。
+      </p>
+    </section>
+  </article>
+</BaseLayout>
